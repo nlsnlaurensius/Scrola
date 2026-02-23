@@ -45,7 +45,7 @@ export class ChapterService {
   async createChapter(chapter: ChapterInsert) {
     const { data, error } = await this.supabase
       .from('chapters')
-      .insert(chapter)
+      .insert(chapter as any)
       .select()
       .single();
 
@@ -56,7 +56,8 @@ export class ChapterService {
   async updateChapter(id: string, updates: ChapterUpdate) {
     const { data, error } = await this.supabase
       .from('chapters')
-      .update(updates)
+      // @ts-ignore - Supabase type inference issue
+      .update(updates as any)
       .eq('id', id)
       .select()
       .single();
@@ -77,7 +78,7 @@ export class ChapterService {
   async incrementView(chapterId: string) {
     const { error } = await this.supabase.rpc('increment_chapter_view', {
       chapter_uuid: chapterId,
-    });
+    } as any);
 
     if (error) throw error;
   }
@@ -97,7 +98,7 @@ export class ChapterService {
   async createPage(page: PageInsert) {
     const { data, error } = await this.supabase
       .from('pages')
-      .insert(page)
+      .insert(page as any)
       .select()
       .single();
 
@@ -108,7 +109,7 @@ export class ChapterService {
   async createPages(pages: PageInsert[]) {
     const { data, error } = await this.supabase
       .from('pages')
-      .insert(pages)
+      .insert(pages as any)
       .select();
 
     if (error) throw error;
@@ -118,7 +119,8 @@ export class ChapterService {
   async updatePageOrder(pageId: string, newOrder: number) {
     const { data, error } = await this.supabase
       .from('pages')
-      .update({ page_order: newOrder })
+      // @ts-ignore - Supabase type inference issue
+      .update({ page_order: newOrder } as any)
       .eq('id', pageId)
       .select()
       .single();

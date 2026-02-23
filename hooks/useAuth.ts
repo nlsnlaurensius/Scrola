@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { Profile } from '@/types/user.types';
-import { authService } from '@/services/auth.service';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -20,7 +19,13 @@ export function useAuth() {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          const profile = await authService.getProfile(session.user.id);
+          // Get profile directly from Supabase
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
           setProfile(profile);
         }
       } catch (error) {
@@ -40,7 +45,13 @@ export function useAuth() {
 
       if (session?.user) {
         try {
-          const profile = await authService.getProfile(session.user.id);
+          // Get profile directly from Supabase
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
           setProfile(profile);
         } catch (error) {
           console.error('Error getting profile:', error);
@@ -58,7 +69,7 @@ export function useAuth() {
   }, [supabase.auth]);
 
   const signOut = async () => {
-    await authService.signOut();
+    await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
   };

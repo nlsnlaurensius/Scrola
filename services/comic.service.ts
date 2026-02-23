@@ -93,7 +93,7 @@ export class ComicService {
   async createComic(comic: ComicInsert) {
     const { data, error } = await this.supabase
       .from('comics')
-      .insert(comic)
+      .insert(comic as any)
       .select()
       .single();
 
@@ -102,8 +102,10 @@ export class ComicService {
   }
 
   async updateComic(id: string, updates: ComicUpdate) {
+    // @ts-ignore - Supabase type inference issue with partial updates
     const { data, error } = await this.supabase
       .from('comics')
+      // @ts-ignore
       .update(updates)
       .eq('id', id)
       .select()
@@ -122,7 +124,7 @@ export class ComicService {
   async incrementView(comicId: string) {
     const { error } = await this.supabase.rpc('increment_comic_view', {
       comic_uuid: comicId,
-    });
+    } as any);
 
     if (error) throw error;
   }

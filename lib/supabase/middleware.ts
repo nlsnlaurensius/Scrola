@@ -14,24 +14,20 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
+        setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
+          cookiesToSet.forEach(({ name, value }: { name: string; value: string }) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
             request,
           });
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value, options }: { name: string; value: string; options?: any }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
         },
       },
     }
   );
-
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
 
   const {
     data: { user },
@@ -52,7 +48,7 @@ export async function updateSession(request: NextRequest) {
   const url = request.nextUrl.clone();
 
   // Protected routes that require authentication
-  const protectedRoutes = ['/profile', '/artist', '/admin', '/dashboard'];
+  const protectedRoutes = ['/profile', '/dashboard'];
   const isProtectedRoute = protectedRoutes.some((route) =>
     url.pathname.startsWith(route)
   );
@@ -79,13 +75,19 @@ export async function updateSession(request: NextRequest) {
   // Role-based access control
   if (user && userRole) {
     // Admin-only routes
-    if (url.pathname.startsWith('/admin') && userRole !== 'admin') {
+    if (url.pathname.startsWith('/dashboard/admin') && userRole !== 'admin') {
       url.pathname = '/';
       return NextResponse.redirect(url);
     }
 
-    // Artist-only routes
-    if (url.pathname.startsWith('/artist') && !['artist', 'admin'].includes(userRole)) {
+    // Artist-only routes (artists and admins can access)
+    if (url.pathname.startsWith('/dashboard/artist') && !['artist', 'admin'].includes(userRole)) {
+      url.pathname = '/';
+      return NextResponse.redirect(url);
+    }
+
+    // Readers cannot access dashboard routes
+    if (url.pathname.startsWith('/dashboard') && userRole === 'reader') {
       url.pathname = '/';
       return NextResponse.redirect(url);
     }

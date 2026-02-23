@@ -14,10 +14,10 @@ export class StorageService {
   // Upload avatar
   async uploadAvatar(userId: string, file: File): Promise<string> {
     const fileName = this.generateFileName(file);
-    const filePath = `avatars/${userId}/${fileName}`;
+    const filePath = `${userId}/${fileName}`;
 
     const { error: uploadError } = await this.supabase.storage
-      .from('comic-assets')
+      .from('avatars')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true,
@@ -27,7 +27,7 @@ export class StorageService {
 
     const {
       data: { publicUrl },
-    } = this.supabase.storage.from('comic-assets').getPublicUrl(filePath);
+    } = this.supabase.storage.from('avatars').getPublicUrl(filePath);
 
     return publicUrl;
   }
@@ -35,10 +35,10 @@ export class StorageService {
   // Upload comic cover
   async uploadCover(comicId: string, file: File): Promise<string> {
     const fileName = this.generateFileName(file);
-    const filePath = `covers/${comicId}/${fileName}`;
+    const filePath = `${comicId}/${fileName}`;
 
     const { error: uploadError } = await this.supabase.storage
-      .from('comic-assets')
+      .from('covers')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true,
@@ -48,7 +48,7 @@ export class StorageService {
 
     const {
       data: { publicUrl },
-    } = this.supabase.storage.from('comic-assets').getPublicUrl(filePath);
+    } = this.supabase.storage.from('covers').getPublicUrl(filePath);
 
     return publicUrl;
   }
@@ -56,10 +56,10 @@ export class StorageService {
   // Upload chapter page
   async uploadPage(chapterId: string, file: File, pageOrder: number): Promise<string> {
     const fileName = `page-${pageOrder}-${this.generateFileName(file)}`;
-    const filePath = `pages/${chapterId}/${fileName}`;
+    const filePath = `${chapterId}/${fileName}`;
 
     const { error: uploadError } = await this.supabase.storage
-      .from('comic-assets')
+      .from('pages')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false,
@@ -69,7 +69,7 @@ export class StorageService {
 
     const {
       data: { publicUrl },
-    } = this.supabase.storage.from('comic-assets').getPublicUrl(filePath);
+    } = this.supabase.storage.from('pages').getPublicUrl(filePath);
 
     return publicUrl;
   }
@@ -88,19 +88,19 @@ export class StorageService {
   }
 
   // Delete file from storage
-  async deleteFile(filePath: string) {
+  async deleteFile(bucketName: string, filePath: string) {
     const { error } = await this.supabase.storage
-      .from('comic-assets')
+      .from(bucketName)
       .remove([filePath]);
 
     if (error) throw error;
   }
 
   // Get public URL
-  getPublicUrl(filePath: string): string {
+  getPublicUrl(bucketName: string, filePath: string): string {
     const {
       data: { publicUrl },
-    } = this.supabase.storage.from('comic-assets').getPublicUrl(filePath);
+    } = this.supabase.storage.from(bucketName).getPublicUrl(filePath);
 
     return publicUrl;
   }
